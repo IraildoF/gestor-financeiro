@@ -1,0 +1,48 @@
+/* Touch-first layout, preserving the existing color palette. */
+html,body{font-size:16px;overflow-wrap:anywhere}
+body{padding-bottom:calc(92px + env(safe-area-inset-bottom))}
+button,input,select{min-height:44px;touch-action:manipulation}
+input,select,textarea{font-size:16px;min-width:0}
+.field label,.muted-note,.tag,.card h3{font-size:14px}
+.muted-note{color:var(--muted)}
+.head-inner{padding-top:calc(12px + env(safe-area-inset-top))}
+.brand{font-size:18px}
+main{max-width:900px}
+.modal{max-height:85dvh;overflow-y:auto}
+.toast{bottom:calc(92px + env(safe-area-inset-bottom));width:max-content;max-width:calc(100% - 24px)}
+nav.tabs{position:fixed;bottom:0;left:0;right:0;max-width:none;justify-content:center;background:var(--card);border-top:1px solid var(--line);padding:6px 8px calc(6px + env(safe-area-inset-bottom));z-index:60}
+nav.tabs button{flex:1;max-width:220px;min-height:54px;padding:8px 4px;font-size:14px;white-space:normal;border-bottom:0;border-radius:10px}
+nav.tabs button.active{background:var(--bg2)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+@media(max-width:600px){
+ header{position:relative}
+ .head-inner{gap:8px;padding-left:14px;padding-right:14px}
+ .brand{flex:1}.sync-pill{font-size:12px}
+ .month-nav{order:3;flex:1;margin-left:0;justify-content:space-between}
+ #todayBtn{order:4}.month-label{min-width:0}
+ main{padding:16px 12px}.card{padding:15px;min-width:0}
+ .grid{gap:12px}.cards-4{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .stat .val{font-size:clamp(18px,5vw,25px);letter-spacing:-.5px}.stat .icon{display:none}
+ .stat .lbl{font-size:13px}.stat .sub{font-size:12px}
+ .form-grid{grid-template-columns:1fr}.seg button{flex:1;font-size:16px}
+ #addBtn{width:100%;justify-content:center}
+ .filters input,.filters select{width:100%;min-width:0}
+ .cat-top{flex-wrap:wrap}.cat-vals{flex-basis:100%;text-align:left;margin-left:19px}
+ .tbl-wrap{overflow:visible}table,tbody{display:block}thead{display:none}
+ tbody tr{display:grid;grid-template-columns:1fr auto;gap:8px;padding:14px 0;border-bottom:1px solid var(--line)}
+ td{padding:0;border:0;min-width:0}td:nth-child(2){overflow-wrap:anywhere}
+ #txBody td:nth-child(2){grid-column:1;grid-row:1;font-weight:600}
+ #txBody td:nth-child(1){grid-column:1;grid-row:3;font-size:14px}
+ #txBody td:nth-child(3){grid-column:1;grid-row:2}
+ #txBody td:nth-child(4){grid-column:2;grid-row:1/3;align-self:center}
+ #txBody td:nth-child(5){grid-column:2;grid-row:3}
+ #catBody tr{display:flex;flex-direction:column;gap:10px}
+ #catBody td{display:flex;align-items:center;justify-content:space-between;text-align:left!important;gap:8px}
+ #catBody td:nth-child(3)::before{content:'Limite padrão'}
+ #catBody td:nth-child(4)::before{content:'Limite deste mês'}
+ #catBody td:nth-child(5)::before{content:'Movimento no mês'}
+ #catBody td:last-child{justify-content:flex-end}
+ .modal-bg{padding:12px}.swatch{width:40px;height:40px}
+ .legend .li{flex-wrap:wrap}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}

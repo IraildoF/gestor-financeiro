@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Minhas Finanças</title>
+<meta name="theme-color" content="#0f1420">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Finanças">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<style>
+  :root{
+    --bg:#0f1420; --bg2:#151c2c; --card:#1b2436; --card2:#212c42;
+    --line:#2a3550; --line2:#38456a;
+    --txt:#e8edf7; --muted:#93a1bd; --muted2:#6b7896;
+    --accent:#4f8cff; --accent2:#3a6fd8;
+    --green:#31c76a; --green-bg:#12331f;
+    --yellow:#f4c04a; --yellow-bg:#33290c;
+    --red:#f0616a; --red-bg:#331317;
+    --receita:#31c76a; --despesa:#f0616a;
+    --shadow:0 6px 22px rgba(0,0,0,.35);
+    --radius:14px;
+  }
+  @media (prefers-color-scheme: light){
+    :root{
+      --bg:#eef1f7; --bg2:#e5e9f2; --card:#ffffff; --card2:#f6f8fc;
+      --line:#e2e7f0; --line2:#d3dae7;
+      --txt:#1b2333; --muted:#5c6a86; --muted2:#8794ac;
+      --accent:#2f6fe4; --accent2:#255ac0;
+      --green:#1a9e51; --green-bg:#e3f6ec;
+      --yellow:#c9922a; --yellow-bg:#fbf1d8;
+      --red:#d8434d; --red-bg:#fbe6e8;
+      --receita:#1a9e51; --despesa:#d8434d;
+      --shadow:0 6px 22px rgba(30,50,90,.10);
+    }
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--txt);font-family:'Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif;font-size:15px;line-height:1.45}
+  body{padding-bottom:60px}
+  button{font-family:inherit;cursor:pointer}
+  input,select,textarea{font-family:inherit;font-size:14px}
+  ::selection{background:var(--accent);color:#fff}
+
+  header{background:linear-gradient(180deg,var(--bg2),var(--bg));border-bottom:1px solid var(--line);position:sticky;top:0;z-index:50}
+  .head-inner{max-width:1180px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:11px;font-weight:700;font-size:18px}
+  .brand .logo{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--accent),#7b5cff);display:flex;align-items:center;justify-content:center;font-size:19px}
+  .sync-pill{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;padding:5px 11px;border-radius:20px;border:1px solid var(--line2);background:var(--card);color:var(--muted);cursor:pointer}
+  .sync-pill .sdot{width:8px;height:8px;border-radius:50%;background:var(--muted2)}
+  .sync-pill.on{color:var(--green);border-color:var(--green)}.sync-pill.on .sdot{background:var(--green);box-shadow:0 0 0 3px var(--green-bg)}
+  .sync-pill.err{color:var(--red);border-color:var(--red)}.sync-pill.err .sdot{background:var(--red)}
+  .sync-pill.connecting .sdot{background:var(--yellow);animation:blink 1s infinite}
+  @keyframes blink{50%{opacity:.3}}
+  .month-nav{display:flex;align-items:center;gap:6px;margin-left:auto;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:5px 6px}
+  .month-nav button{width:32px;height:32px;border:none;background:transparent;color:var(--muted);font-size:19px;border-radius:8px;display:flex;align-items:center;justify-content:center}
+  .month-nav button:hover{background:var(--card2);color:var(--txt)}
+  .month-label{min-width:150px;text-align:center;font-weight:600;text-transform:capitalize}
+  .btn{border:1px solid var(--line2);background:var(--card);color:var(--txt);padding:8px 14px;border-radius:10px;font-size:14px;font-weight:600;display:inline-flex;align-items:center;gap:7px;transition:.12s}
+  .btn:hover{border-color:var(--accent);background:var(--card2)}
+  .btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn-primary:hover{background:var(--accent2);border-color:var(--accent2)}
+  .btn-sm{padding:5px 10px;font-size:13px;border-radius:8px}
+  .btn-ghost{background:transparent;border-color:transparent;color:var(--muted)}
+  .btn-ghost:hover{background:var(--card2);color:var(--txt)}
+
+  nav.tabs{max-width:1180px;margin:0 auto;padding:0 20px;display:flex;gap:4px;overflow-x:auto}
+  nav.tabs button{background:transparent;border:none;color:var(--muted);padding:12px 16px;font-size:14px;font-weight:600;border-bottom:2.5px solid transparent;margin-bottom:-1px;white-space:nowrap}
+  nav.tabs button:hover{color:var(--txt)}
+  nav.tabs button.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+  main{max-width:1180px;margin:0 auto;padding:22px 20px}
+  .tabview{display:none}
+  .tabview.active{display:block;animation:fade .2s}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .grid{display:grid;gap:16px}
+  .cards-4{grid-template-columns:repeat(4,1fr)}
+  .cols-2{grid-template-columns:1.3fr 1fr}
+  @media(max-width:860px){.cards-4{grid-template-columns:repeat(2,1fr)}.cols-2{grid-template-columns:1fr}}
+  @media(max-width:520px){.cards-4{grid-template-columns:1fr}}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+  .card h3{font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+
+  .stat .lbl{font-size:13px;color:var(--muted);font-weight:600;display:flex;align-items:center;gap:7px}
+  .stat .val{font-size:26px;font-weight:800;margin-top:8px;letter-spacing:-.5px}
+  .stat .sub{font-size:12px;color:var(--muted2);margin-top:4px}
+  .stat .icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
+  .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+
+  .cat-row{padding:13px 0;border-bottom:1px solid var(--line)}
+  .cat-row:last-child{border-bottom:none}
+  .cat-top{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+  .cat-name{font-weight:600;display:flex;align-items:center;gap:9px}
+  .cat-vals{margin-left:auto;text-align:right;font-size:13px}
+  .cat-vals b{font-size:14px}
+  .cat-vals .rem{color:var(--muted);font-size:12px}
+  .bar{height:9px;background:var(--bg2);border-radius:20px;overflow:hidden;position:relative}
+  .bar span{position:absolute;left:0;top:0;bottom:0;border-radius:20px;transition:width .4s}
+  .badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px}
+  .badge.ok{background:var(--green-bg);color:var(--green)}
+  .badge.warn{background:var(--yellow-bg);color:var(--yellow)}
+  .badge.over{background:var(--red-bg);color:var(--red)}
+
+  .form-grid{display:grid;grid-template-columns:120px 1.4fr 1fr 130px auto;gap:10px;align-items:end}
+  @media(max-width:900px){.form-grid{grid-template-columns:1fr 1fr}}
+  @media(max-width:520px){.form-grid{grid-template-columns:1fr}}
+  .field{display:flex;flex-direction:column;gap:5px}
+  .field label{font-size:12px;color:var(--muted);font-weight:600}
+  input,select,textarea{background:var(--bg2);border:1px solid var(--line2);color:var(--txt);padding:9px 11px;border-radius:9px;width:100%;outline:none;transition:.12s}
+  input:focus,select:focus,textarea:focus{border-color:var(--accent);background:var(--card)}
+  textarea{resize:vertical;min-height:90px;font-family:ui-monospace,Consolas,monospace;font-size:12.5px;line-height:1.5}
+  .seg{display:inline-flex;background:var(--bg2);border:1px solid var(--line2);border-radius:9px;padding:3px}
+  .seg button{border:none;background:transparent;color:var(--muted);padding:6px 13px;border-radius:7px;font-weight:600;font-size:13px}
+  .seg button.on-r{background:var(--receita);color:#fff}
+  .seg button.on-d{background:var(--despesa);color:#fff}
+
+  .tbl-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th{text-align:left;font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.3px;padding:10px 12px;border-bottom:1px solid var(--line)}
+  td{padding:11px 12px;border-bottom:1px solid var(--line)}
+  tr:last-child td{border-bottom:none}
+  tbody tr:hover{background:var(--card2)}
+  .tag{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:3px 9px;border-radius:20px;background:var(--bg2)}
+  .val-r{color:var(--receita);font-weight:700}
+  .val-d{color:var(--despesa);font-weight:700}
+  .del{color:var(--muted2);border:none;background:transparent;font-size:16px;padding:4px 8px;border-radius:6px}
+  .del:hover{color:var(--red);background:var(--red-bg)}
+  .filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+  .filters input,.filters select{width:auto;min-width:130px}
+
+  .empty{text-align:center;padding:38px 20px;color:var(--muted2)}
+  .empty .em-ic{font-size:34px;margin-bottom:10px;opacity:.6}
+
+  .legend{display:flex;flex-direction:column;gap:9px;margin-top:6px}
+  .legend .li{display:flex;align-items:center;gap:9px;font-size:13px}
+  .legend .li .nm{color:var(--muted)}
+  .legend .li .amt{margin-left:auto;font-weight:700}
+  .legend .li .pct{color:var(--muted2);font-size:12px;width:42px;text-align:right}
+
+  .modal-bg{position:fixed;inset:0;background:rgba(6,10,20,.6);display:none;align-items:center;justify-content:center;z-index:100;padding:20px;backdrop-filter:blur(3px)}
+  .modal-bg.show{display:flex}
+  .modal{background:var(--card);border:1px solid var(--line2);border-radius:16px;width:100%;max-width:440px;box-shadow:var(--shadow);animation:pop .2s}
+  @keyframes pop{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+  .modal-h{padding:18px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;font-weight:700;font-size:16px}
+  .modal-b{padding:20px;display:flex;flex-direction:column;gap:14px}
+  .modal-f{padding:16px 20px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end}
+  .swatches{display:flex;gap:8px;flex-wrap:wrap}
+  .swatch{width:30px;height:30px;border-radius:8px;cursor:pointer;border:2.5px solid transparent}
+  .swatch.sel{border-color:var(--txt)}
+
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--card);border:1px solid var(--line2);color:var(--txt);padding:12px 20px;border-radius:11px;box-shadow:var(--shadow);z-index:200;font-weight:600;font-size:14px;opacity:0;transition:.3s;display:flex;align-items:center;gap:9px}
+  .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+  .alert{background:var(--red-bg);border:1px solid var(--red);color:var(--red);padding:11px 15px;border-radius:10px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:9px;margin-bottom:14px}
+  .muted-note{font-size:12.5px;color:var(--muted2);line-height:1.5}
+  .row-flex{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .spacer{flex:1}
+  .lim-input{width:120px}
+  a.link{color:var(--accent);cursor:pointer;text-decoration:none;font-weight:600}
+  details{border:1px solid var(--line);border-radius:10px;padding:0}
+  details summary{cursor:pointer;padding:11px 14px;font-weight:600;font-size:13.5px;color:var(--accent);list-style:none}
+  details summary::-webkit-details-marker{display:none}
+  details[open] summary{border-bottom:1px solid var(--line)}
+  details .det-body{padding:14px}
+  details ol{margin-left:18px;line-height:1.7;font-size:13px}
+  details code{background:var(--bg2);padding:1px 6px;border-radius:5px;font-size:12px}
+  pre.rules{background:var(--bg2);border:1px solid var(--line2);border-radius:8px;padding:11px;font-size:11.5px;overflow-x:auto;white-space:pre;line-height:1.5}
+  .status-line{display:flex;align-items:center;gap:9px;font-size:13.5px;font-weight:600;margin-bottom:14px}
+</style>
+<link rel="stylesheet" href="mobile.css">
+</head>
+<body>
+
+<header>
+  <div class="head-inner">
+    <div class="brand"><span class="logo">💰</span> Minhas Finanças</div>
+    <span class="sync-pill" id="syncPill" title="Dados salvos neste aparelho"><span class="sdot"></span><span id="syncPillText">Local</span></span>
+    <div class="month-nav">
+      <button id="prevMonth" title="Mês anterior">‹</button>
+      <div class="month-label" id="monthLabel">—</div>
+      <button id="nextMonth" title="Próximo mês">›</button>
+    </div>
+    <button class="btn btn-ghost btn-sm" id="todayBtn" title="Ir para o mês atual">Hoje</button>
+  </div>
+  <nav class="tabs">
+    <button data-tab="dashboard" class="active">📊 Painel</button>
+    <button data-tab="lancamentos">📝 Lançar</button>
+    <button data-tab="categorias">🏷️ Categorias</button>
+    <button data-tab="dados">⚙️ Dados</button>
+  </nav>
+</header>
+
+<main>
+  <!-- ============ DASHBOARD ============ -->
+  <section class="tabview active" id="tab-dashboard">
+    <div id="dashAlert"></div>
+    <div class="grid cards-4" style="margin-bottom:16px">
+      <div class="card stat">
+        <div class="row-flex"><span class="lbl"><span class="dot" style="background:var(--receita)"></span>Receitas</span><span class="spacer"></span><span class="icon" style="background:var(--green-bg);color:var(--green)">↑</span></div>
+        <div class="val" id="sReceita">R$ 0,00</div><div class="sub" id="sReceitaSub">—</div>
+      </div>
+      <div class="card stat">
+        <div class="row-flex"><span class="lbl"><span class="dot" style="background:var(--despesa)"></span>Despesas</span><span class="spacer"></span><span class="icon" style="background:var(--red-bg);color:var(--red)">↓</span></div>
+        <div class="val" id="sDespesa">R$ 0,00</div><div class="sub" id="sDespesaSub"></div>
+      </div>
+      <div class="card stat">
+        <div class="row-flex"><span class="lbl">Saldo do mês</span><span class="spacer"></span><span class="icon" style="background:var(--card2);color:var(--accent)">=</span></div>
+        <div class="val" id="sSaldo">R$ 0,00</div><div class="sub" id="sSaldoSub">Receitas − Despesas</div>
+      </div>
+      <div class="card stat">
+        <div class="row-flex"><span class="lbl">Limite utilizado</span><span class="spacer"></span><span class="icon" style="background:var(--card2)">◐</span></div>
+        <div class="val" id="sLimite">—</div><div class="sub" id="sLimiteSub">do total planejado</div>
+      </div>
+    </div>
+    <div class="grid cols-2">
+      <div class="card">
+        <h3>Orçamento por categoria</h3>
+        <div id="budgetList"></div>
+      </div>
+      <div class="card">
+        <h3>Despesas por categoria</h3>
+        <div id="donutWrap" style="display:flex;gap:20px;align-items:center;flex-wrap:wrap;justify-content:center">
+          <div id="donut"></div>
+          <div class="legend" id="donutLegend" style="flex:1;min-width:160px"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ LANÇAMENTOS ============ -->
+  <section class="tabview" id="tab-lancamentos">
+    <div class="card" style="margin-bottom:16px">
+      <h3>Novo lançamento</h3>
+      <div class="form-grid">
+        <div class="field"><label>Tipo</label>
+          <div class="seg" id="tSeg"><button data-type="despesa" class="on-d">Despesa</button><button data-type="receita">Receita</button></div>
+        </div>
+        <div class="field"><label>Descrição</label><input id="fDesc" placeholder="Ex.: Supermercado, Salário..."></div>
+        <div class="field"><label>Categoria</label><select id="fCat"></select></div>
+        <div class="field"><label>Valor (R$)</label><input id="fVal" inputmode="decimal" placeholder="0,00"></div>
+        <div class="field"><label>Data</label><input id="fDate" type="date"></div>
+      </div>
+      <div style="margin-top:14px" class="row-flex">
+        <button class="btn btn-primary" id="addBtn">＋ Adicionar lançamento</button>
+        <span class="muted-note" id="formHint"></span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="filters">
+        <strong style="font-size:15px">Lançamentos do mês</strong><span class="spacer"></span>
+        <input id="qSearch" placeholder="🔍 Buscar descrição...">
+        <select id="qType"><option value="">Todos os tipos</option><option value="receita">Receitas</option><option value="despesa">Despesas</option></select>
+        <select id="qCat"><option value="">Todas as categorias</option></select>
+      </div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th style="text-align:right">Valor</th><th></th></tr></thead>
+        <tbody id="txBody"></tbody>
+      </table></div>
+      <div id="txEmpty"></div>
+    </div>
+  </section>
+
+  <!-- ============ CATEGORIAS ============ -->
+  <section class="tabview" id="tab-categorias">
+    <div class="card">
+      <div class="row-flex" style="margin-bottom:8px">
+        <h3 style="margin-bottom:0">Categorias & limites mensais</h3><span class="spacer"></span>
+        <button class="btn btn-primary btn-sm" id="newCatBtn">＋ Nova categoria</button>
+      </div>
+      <p class="muted-note" style="margin-bottom:16px">O limite definido aqui é o padrão que se repete todos os meses. Para ajustar apenas <b id="curMonthTxt">este mês</b>, edite o valor na coluna “Limite deste mês”.</p>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Categoria</th><th>Tipo</th><th style="text-align:right">Limite padrão</th><th style="text-align:right">Limite deste mês</th><th style="text-align:right">Gasto no mês</th><th></th></tr></thead>
+        <tbody id="catBody"></tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <!-- ============ DADOS & NUVEM ============ -->
+  <section class="tabview" id="tab-dados">
+    <div class="card" style="margin-bottom:16px">
+      <h3>Somente neste celular</h3>
+      <p>Receitas, despesas e limites são salvos neste aparelho, sem conta e sem sincronização.</p>
+      <p id="offlineStatus" role="status" style="margin:12px 0">Preparando o uso sem internet…</p>
+      <button class="btn btn-primary" id="installBtn">Instalar no celular</button>
+      <p id="installHelp" style="margin-top:12px">No Android, abra o menu do Chrome e escolha Instalar aplicativo ou Adicionar à tela inicial. No iPhone, abra no Safari, toque em Compartilhar → Adicionar à Tela de Início e ative Abrir como App, se disponível.</p>
+      <p class="muted-note" style="margin-top:12px">Faça backups regularmente. Limpar os dados do navegador ou do aplicativo pode apagar seus registros. Para trocar de aparelho, exporte o backup e importe no novo celular.</p>
+    </div>
+    <div class="grid cols-2">
+      <div class="card">
+        <h3>Backup & exportação</h3>
+        <p class="muted-note" style="margin-bottom:14px">Salve uma cópia dos seus registros em um arquivo. A importação substitui os dados atuais após sua confirmação.</p>
+        <div class="row-flex">
+          <button class="btn" id="expJson">⬇️ Backup (.json)</button>
+          <button class="btn" id="expCsv">📄 Mês (.csv)</button>
+          <button class="btn" id="impBtn">⬆️ Importar</button>
+          <input type="file" id="impFile" accept=".json" style="display:none">
+        </div>
+      </div>
+      <div class="card">
+        <h3>Resumo geral</h3>
+        <div id="dataStats" class="muted-note"></div>
+        <hr style="border:none;border-top:1px solid var(--line);margin:16px 0">
+        <button class="btn" id="resetBtn" style="border-color:var(--red);color:var(--red)">🗑️ Apagar todos os dados</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- Category modal -->
+<div class="modal-bg" id="catModal">
+  <div class="modal">
+    <div class="modal-h" id="catModalTitle">Nova categoria</div>
+    <div class="modal-b">
+      <div class="field"><label>Nome</label><input id="cName" placeholder="Ex.: Alimentação"></div>
+      <div class="field"><label>Tipo</label><select id="cType"><option value="despesa">Despesa</option><option value="receita">Receita</option></select></div>
+      <div class="field" id="cLimitField"><label>Limite mensal padrão (R$) <span class="muted-note">— opcional p/ receitas</span></label><input id="cLimit" inputmode="decimal" placeholder="0,00"></div>
+      <div class="field"><label>Cor</label><div class="swatches" id="cSwatches"></div></div>
+    </div>
+    <div class="modal-f">
+      <button class="btn btn-ghost" id="cCancel">Cancelar</button>
+      <button class="btn btn-primary" id="cSave">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+/* ============================================================
+   Gestor Financeiro Mensal v2 — HTML único
+   Modo LOCAL (localStorage) + Modo NUVEM (Firebase Firestore)
+   ============================================================ */
+const LS_KEY='gestor_financeiro_mobile_v1';
+const PALETTE=['#4f8cff','#31c76a','#f0616a','#f4c04a','#a86bff','#2dd4bf','#ff9f43','#ec4899','#38bdf8','#84cc16','#fb7185','#94a3b8'];
+const MESES=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+
+let state=load();
+let current=new Date(); current.setDate(1);
+let currentKey=monthKey(current);
+let filter={q:'',type:'',cat:''};
+let formType='despesa';
+let editingCatId=null;
+let selColor=PALETTE[0];
+
+const cloud={enabled:false};
+function defaultState(){
+  return {categories:[
+    {id:uid(),name:'Moradia',type:'despesa',limit:0,color:'#4f8cff'},
+    {id:uid(),name:'Alimentação',type:'despesa',limit:0,color:'#31c76a'},
+    {id:uid(),name:'Transporte',type:'despesa',limit:0,color:'#f4c04a'},
+    {id:uid(),name:'Saúde',type:'despesa',limit:0,color:'#f0616a'},
+    {id:uid(),name:'Lazer',type:'despesa',limit:0,color:'#a86bff'},
+    {id:uid(),name:'Outros',type:'despesa',limit:0,color:'#94a3b8'},
+    {id:uid(),name:'Salário',type:'receita',limit:0,color:'#2dd4bf'},
+  ],overrides:{},transactions:[]};
+}
+function load(){try{const d=JSON.parse(localStorage.getItem(LS_KEY));if(d&&d.categories){d.overrides=d.overrides||{};d.transactions=d.transactions||[];return d;}}catch(e){}return defaultState();}
+function saveLocal(){
+  try { localStorage.setItem(LS_KEY,JSON.stringify(state)); }
+  catch(e){alert('Não foi possível salvar no aparelho. Exporte um backup agora, antes de fechar o app. Verifique o espaço livre e se o navegador permite armazenamento.'); throw e;}
+}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+function monthKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
+function fmt(n){return 'R$ '+(n||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function parseNum(s){if(typeof s==='number')return s;if(!s)return 0;s=String(s).trim().replace(/\s|R\$/g,'');if(s.includes(','))s=s.replace(/\./g,'').replace(',','.');const n=parseFloat(s);return isNaN(n)?0:n;}
+function catById(id){return state.categories.find(c=>c.id===id);}
+function txOfMonth(k){return state.transactions.filter(t=>t.date.slice(0,7)===k);}
+function limitFor(cat,k){const ov=state.overrides[k];if(ov&&ov[cat.id]!=null&&ov[cat.id]!=='')return Number(ov[cat.id]);return Number(cat.limit)||0;}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+let toastTimer;
+function toast(msg,type){const t=document.getElementById('toast');t.innerHTML=(type==='ok'?'✅ ':type==='err'?'⚠️ ':'')+msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2800);}
+
+/* ============================================================
+   MUTATIONS (mode-aware: local vs cloud)
+   ============================================================ */
+function persistMeta(){saveLocal();}
+function addTxStore(tx){state.transactions.push(tx);saveLocal();}
+function delTxStore(id){state.transactions=state.transactions.filter(t=>t.id!==id);saveLocal();}
+function render(){
+  currentKey=monthKey(current);
+  document.getElementById('monthLabel').textContent=MESES[current.getMonth()]+' '+current.getFullYear();
+  document.getElementById('curMonthTxt').textContent=MESES[current.getMonth()]+'/'+current.getFullYear();
+  renderDashboard();renderTx();renderCats();renderData();fillCatSelects();
+}
+function monthTotals(k){
+  const txs=txOfMonth(k);let rec=0,desp=0;const byCat={};
+  txs.forEach(t=>{if(t.type==='receita')rec+=t.value;else{desp+=t.value;byCat[t.categoryId]=(byCat[t.categoryId]||0)+t.value;}});
+  return{rec,desp,byCat,txs};
+}
+function renderDashboard(){
+  const{rec,desp,byCat,txs}=monthTotals(currentKey);const saldo=rec-desp;
+  document.getElementById('sReceita').textContent=fmt(rec);
+  document.getElementById('sDespesa').textContent=fmt(desp);
+  const se=document.getElementById('sSaldo');se.textContent=fmt(saldo);
+  se.style.color=saldo<0?'var(--despesa)':saldo>0?'var(--receita)':'var(--txt)';
+  document.getElementById('sSaldoSub').textContent=saldo<0?'Gastou mais do que recebeu':'Receitas − Despesas';
+  const despCats=state.categories.filter(c=>c.type==='despesa');
+  let tot=0;despCats.forEach(c=>tot+=limitFor(c,currentKey));
+  const pct=tot>0?Math.round(desp/tot*100):0;const le=document.getElementById('sLimite');
+  le.textContent=tot>0?pct+'%':'—';le.style.color=pct>100?'var(--red)':pct>=80?'var(--yellow)':'var(--txt)';
+  document.getElementById('sLimiteSub').textContent=tot>0?fmt(desp)+' de '+fmt(tot):'Defina limites nas categorias';
+  document.getElementById('sReceitaSub').textContent=txs.length?'':'Nenhum lançamento ainda';
+  const over=despCats.filter(c=>{const l=limitFor(c,currentKey);return l>0&&(byCat[c.id]||0)>l;});
+  const near=despCats.filter(c=>{const l=limitFor(c,currentKey);const g=byCat[c.id]||0;return l>0&&g<=l&&g/l>=0.8;});
+  const al=document.getElementById('dashAlert');
+  if(over.length)al.innerHTML='<div class="alert">🚨 Limite estourado em: <b>'+over.map(c=>esc(c.name)).join(', ')+'</b></div>';
+  else if(near.length)al.innerHTML='<div class="alert" style="background:var(--yellow-bg);border-color:var(--yellow);color:var(--yellow)">⚠️ Perto do limite em: <b>'+near.map(c=>esc(c.name)).join(', ')+'</b></div>';
+  else al.innerHTML='';
+  const bl=document.getElementById('budgetList');
+  if(!despCats.length)bl.innerHTML='<div class="empty"><div class="em-ic">🏷️</div>Nenhuma categoria de despesa.</div>';
+  else bl.innerHTML=despCats.map(c=>{
+    const l=limitFor(c,currentKey),g=byCat[c.id]||0,p=l>0?Math.min(g/l*100,100):0;
+    const st=l===0?'':(g>l?'over':g/l>=0.8?'warn':'ok');
+    const bc=st==='over'?'var(--red)':st==='warn'?'var(--yellow)':c.color;const rem=l-g;
+    return `<div class="cat-row"><div class="cat-top">
+      <span class="cat-name"><span class="dot" style="background:${c.color}"></span>${esc(c.name)}</span>
+      ${l>0?`<span class="badge ${st}">${Math.round(g/l*100)}%</span>`:'<span class="muted-note">sem limite</span>'}
+      <span class="cat-vals"><b>${fmt(g)}</b>${l>0?' / '+fmt(l):''}<br><span class="rem">${l>0?(rem>=0?fmt(rem)+' disponível':fmt(-rem)+' acima'):''}</span></span>
+    </div>${l>0?`<div class="bar"><span style="width:${p}%;background:${bc}"></span></div>`:''}</div>`;
+  }).join('');
+  renderDonut(byCat);
+}
+function renderDonut(byCat){
+  const data=state.categories.filter(c=>c.type==='despesa').map(c=>({name:c.name,color:c.color,val:byCat[c.id]||0})).filter(d=>d.val>0).sort((a,b)=>b.val-a.val);
+  const total=data.reduce((s,d)=>s+d.val,0);
+  const donut=document.getElementById('donut'),legend=document.getElementById('donutLegend');
+  if(!total){donut.innerHTML='';legend.innerHTML='<div class="empty"><div class="em-ic">📉</div>Sem despesas neste mês.</div>';return;}
+  const R=62,C=80,circ=2*Math.PI*R;let off=0,segs='';
+  data.forEach(d=>{const len=d.val/total*circ;segs+=`<circle cx="${C}" cy="${C}" r="${R}" fill="none" stroke="${d.color}" stroke-width="22" stroke-dasharray="${len} ${circ-len}" stroke-dashoffset="${-off}" transform="rotate(-90 ${C} ${C})"></circle>`;off+=len;});
+  donut.innerHTML=`<svg width="160" height="160" viewBox="0 0 160 160">${segs}<text x="80" y="74" text-anchor="middle" fill="var(--muted)" font-size="11">Total</text><text x="80" y="92" text-anchor="middle" fill="var(--txt)" font-size="14" font-weight="700">${fmt(total)}</text></svg>`;
+  legend.innerHTML=data.map(d=>`<div class="li"><span class="dot" style="background:${d.color}"></span><span class="nm">${esc(d.name)}</span><span class="amt">${fmt(d.val)}</span><span class="pct">${Math.round(d.val/total*100)}%</span></div>`).join('');
+}
+function renderTx(){
+  const tb=document.getElementById('txBody');
+  let txs=txOfMonth(currentKey).slice().sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id));
+  if(filter.q)txs=txs.filter(t=>t.description.toLowerCase().includes(filter.q.toLowerCase()));
+  if(filter.type)txs=txs.filter(t=>t.type===filter.type);
+  if(filter.cat)txs=txs.filter(t=>t.categoryId===filter.cat);
+  const em=document.getElementById('txEmpty');
+  if(!txs.length){tb.innerHTML='';em.innerHTML='<div class="empty"><div class="em-ic">📭</div>Nenhum lançamento'+(filter.q||filter.type||filter.cat?' com esses filtros':' neste mês')+'.</div>';return;}
+  em.innerHTML='';
+  tb.innerHTML=txs.map(t=>{const c=catById(t.categoryId);const d=t.date.slice(8,10)+'/'+t.date.slice(5,7);
+    return `<tr><td style="white-space:nowrap;color:var(--muted)">${d}</td><td>${esc(t.description||'—')}</td>
+      <td><span class="tag"><span class="dot" style="background:${c?c.color:'#888'}"></span>${c?esc(c.name):'—'}</span></td>
+      <td style="text-align:right" class="${t.type==='receita'?'val-r':'val-d'}">${t.type==='receita'?'+':'−'} ${fmt(t.value)}</td>
+      <td style="text-align:right"><button class="del" data-del="${t.id}" title="Excluir">✕</button></td></tr>`;}).join('');
+}
+function renderCats(){
+  const{byCat}=monthTotals(currentKey);const tb=document.getElementById('catBody');
+  tb.innerHTML=state.categories.map(c=>{
+    const ml=limitFor(c,currentKey);
+    const isOv=state.overrides[currentKey]&&state.overrides[currentKey][c.id]!=null&&state.overrides[currentKey][c.id]!=='';
+    const gasto=c.type==='despesa'?(byCat[c.id]||0):txOfMonth(currentKey).filter(t=>t.categoryId===c.id&&t.type==='receita').reduce((s,t)=>s+t.value,0);
+    return `<tr><td><span class="cat-name"><span class="dot" style="background:${c.color}"></span>${esc(c.name)}</span></td>
+      <td><span class="tag" style="color:${c.type==='receita'?'var(--receita)':'var(--despesa)'}">${c.type}</span></td>
+      <td style="text-align:right;color:var(--muted)">${c.type==='despesa'?fmt(c.limit):'—'}</td>
+      <td style="text-align:right">${c.type==='despesa'?`<input class="lim-input ovInput" data-cat="${c.id}" inputmode="decimal" value="${ml||''}" placeholder="${c.limit||'0'}" style="text-align:right;display:inline-block${isOv?';border-color:var(--accent)':''}">`:'<span class="muted-note">—</span>'}</td>
+      <td style="text-align:right;font-weight:600">${fmt(gasto)}</td>
+      <td style="text-align:right;white-space:nowrap"><button class="btn-ghost btn-sm" data-edit="${c.id}" title="Editar">✏️</button><button class="del" data-catdel="${c.id}" title="Excluir">✕</button></td></tr>`;
+  }).join('');
+}
+function renderData(){
+  const nCat=state.categories.length,nTx=state.transactions.length;
+  const months=[...new Set(state.transactions.map(t=>t.date.slice(0,7)))].length;
+  let tr=0,td=0;state.transactions.forEach(t=>t.type==='receita'?tr+=t.value:td+=t.value);
+  document.getElementById('dataStats').innerHTML=
+    `<div class="row-flex" style="justify-content:space-between"><span>Categorias</span><b>${nCat}</b></div>
+     <div class="row-flex" style="justify-content:space-between;margin-top:6px"><span>Lançamentos</span><b>${nTx}</b></div>
+     <div class="row-flex" style="justify-content:space-between;margin-top:6px"><span>Meses com movimento</span><b>${months}</b></div>
+     <div class="row-flex" style="justify-content:space-between;margin-top:6px"><span>Total de receitas</span><b class="val-r">${fmt(tr)}</b></div>
+     <div class="row-flex" style="justify-content:space-between;margin-top:6px"><span>Total de despesas</span><b class="val-d">${fmt(td)}</b></div>`;
+}
+function fillCatSelects(){
+  const fCat=document.getElementById('fCat');const list=state.categories.filter(c=>c.type===formType);
+  const prevF=fCat.value;
+  fCat.innerHTML=list.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('')||'<option value="">— crie uma categoria —</option>';
+  if(list.some(c=>c.id===prevF))fCat.value=prevF;
+  const qCat=document.getElementById('qCat');const prev=qCat.value;
+  qCat.innerHTML='<option value="">Todas as categorias</option>'+state.categories.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
+  qCat.value=prev;
+}
+
+/* ============================================================
+   EVENTS
+   ============================================================ */
+document.querySelectorAll('nav.tabs button').forEach(b=>{b.onclick=()=>{
+  document.querySelectorAll('nav.tabs button').forEach(x=>x.classList.remove('active'));b.classList.add('active');
+  document.querySelectorAll('.tabview').forEach(v=>v.classList.remove('active'));
+  document.getElementById('tab-'+b.dataset.tab).classList.add('active');};});
+document.getElementById('prevMonth').onclick=()=>{current.setMonth(current.getMonth()-1);render();};
+document.getElementById('nextMonth').onclick=()=>{current.setMonth(current.getMonth()+1);render();};
+document.getElementById('todayBtn').onclick=()=>{current=new Date();current.setDate(1);render();};
+document.getElementById('syncPill').onclick=()=>{document.querySelector('nav.tabs button[data-tab="dados"]').click();};
+
+document.querySelectorAll('#tSeg button').forEach(b=>{b.onclick=()=>{
+  formType=b.dataset.type;document.querySelectorAll('#tSeg button').forEach(x=>x.classList.remove('on-d','on-r'));
+  b.classList.add(formType==='despesa'?'on-d':'on-r');fillCatSelects();};});
+
+document.getElementById('addBtn').onclick=()=>{
+  const desc=document.getElementById('fDesc').value.trim();
+  const catId=document.getElementById('fCat').value;
+  const val=parseNum(document.getElementById('fVal').value);
+  const date=document.getElementById('fDate').value;
+  if(!catId){toast('Crie uma categoria primeiro.','err');return;}
+  if(!Number.isFinite(val)||val<=0){toast('Informe um valor válido.','err');document.getElementById('fVal').focus();return;}
+  if(!date){toast('Informe a data.','err');return;}
+  addTxStore({id:uid(),date,type:formType,categoryId:catId,description:desc||'(sem descrição)',value:val});
+  document.getElementById('fDesc').value='';document.getElementById('fVal').value='';
+  current=new Date(date+'T12:00:00');current.setDate(1);render();toast('Lançamento adicionado.','ok');document.getElementById('fDesc').focus();
+};
+['fDesc','fVal'].forEach(id=>document.getElementById(id).addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('addBtn').click();}));
+
+document.body.addEventListener('click',e=>{
+  const del=e.target.closest('[data-del]');if(del){delTxStore(del.dataset.del);render();toast('Lançamento excluído.','ok');return;}
+  const ed=e.target.closest('[data-edit]');if(ed){openCatModal(ed.dataset.edit);return;}
+  const cd=e.target.closest('[data-catdel]');if(cd){deleteCat(cd.dataset.catdel);return;}
+});
+document.getElementById('qSearch').oninput=e=>{filter.q=e.target.value;renderTx();};
+document.getElementById('qType').onchange=e=>{filter.type=e.target.value;renderTx();};
+document.getElementById('qCat').onchange=e=>{filter.cat=e.target.value;renderTx();};
+
+document.getElementById('catBody').addEventListener('change',e=>{
+  const inp=e.target.closest('.ovInput');if(!inp)return;const cid=inp.dataset.cat;const raw=inp.value.trim();
+  if(!state.overrides[currentKey])state.overrides[currentKey]={};
+  if(raw==='')delete state.overrides[currentKey][cid];else state.overrides[currentKey][cid]=parseNum(raw);
+  if(Object.keys(state.overrides[currentKey]).length===0)delete state.overrides[currentKey];
+  persistMeta();renderDashboard();renderCats();toast('Limite deste mês atualizado.','ok');
+});
+
+/* category modal */
+function buildSwatches(){const w=document.getElementById('cSwatches');
+  w.innerHTML=PALETTE.map(c=>`<div class="swatch${c===selColor?' sel':''}" data-c="${c}" style="background:${c}"></div>`).join('');
+  w.querySelectorAll('.swatch').forEach(s=>s.onclick=()=>{selColor=s.dataset.c;buildSwatches();});}
+function openCatModal(id){editingCatId=id||null;const m=document.getElementById('catModal');
+  if(id){const c=catById(id);document.getElementById('catModalTitle').textContent='Editar categoria';
+    document.getElementById('cName').value=c.name;document.getElementById('cType').value=c.type;
+    document.getElementById('cLimit').value=c.limit||'';selColor=c.color;}
+  else{document.getElementById('catModalTitle').textContent='Nova categoria';document.getElementById('cName').value='';
+    document.getElementById('cType').value='despesa';document.getElementById('cLimit').value='';selColor=PALETTE[state.categories.length%PALETTE.length];}
+  toggleLimitField();buildSwatches();m.classList.add('show');setTimeout(()=>document.getElementById('cName').focus(),50);}
+function toggleLimitField(){document.getElementById('cLimitField').style.opacity=document.getElementById('cType').value==='receita'?.5:1;}
+document.getElementById('cType').onchange=toggleLimitField;
+document.getElementById('newCatBtn').onclick=()=>openCatModal(null);
+document.getElementById('cCancel').onclick=()=>document.getElementById('catModal').classList.remove('show');
+document.getElementById('catModal').onclick=e=>{if(e.target.id==='catModal')e.target.classList.remove('show');};
+document.getElementById('cSave').onclick=()=>{
+  const name=document.getElementById('cName').value.trim();const type=document.getElementById('cType').value;
+  const limit=parseNum(document.getElementById('cLimit').value);
+  if(!name){toast('Informe o nome.','err');return;}
+  if(editingCatId){const c=catById(editingCatId);c.name=name;c.type=type;c.limit=type==='despesa'?limit:0;c.color=selColor;}
+  else state.categories.push({id:uid(),name,type,limit:type==='despesa'?limit:0,color:selColor});
+  persistMeta();document.getElementById('catModal').classList.remove('show');render();toast('Categoria salva.','ok');
+};
+function deleteCat(id){const used=state.transactions.some(t=>t.categoryId===id);const c=catById(id);
+  if(used){if(!confirm('A categoria "'+c.name+'" possui lançamentos. Excluir mesmo assim? Os lançamentos serão mantidos, porém sem categoria.'))return;}
+  else{if(!confirm('Excluir a categoria "'+c.name+'"?'))return;}
+  state.categories=state.categories.filter(x=>x.id!==id);
+  Object.keys(state.overrides).forEach(k=>{if(state.overrides[k])delete state.overrides[k][id];});
+  persistMeta();render();toast('Categoria excluída.','ok');}
+
+/* data: export/import/reset */
+document.getElementById('expJson').onclick=()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});downloadBlob(blob,'gestor-financeiro-backup-'+monthKey(new Date())+'.json');toast('Backup exportado.','ok');};
+document.getElementById('expCsv').onclick=()=>{const txs=txOfMonth(currentKey).slice().sort((a,b)=>a.date.localeCompare(b.date));
+  if(!txs.length){toast('Nenhum lançamento neste mês.','err');return;}
+  let csv='Data;Tipo;Categoria;Descricao;Valor\n';
+  txs.forEach(t=>{const c=catById(t.categoryId);csv+=[t.date,t.type,c?c.name:'','"'+(t.description||'').replace(/"/g,'""')+'"',String(t.value).replace('.',',')].join(';')+'\n';});
+  downloadBlob(new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'}),'lancamentos-'+currentKey+'.csv');toast('CSV exportado.','ok');};
+document.getElementById('impBtn').onclick=()=>document.getElementById('impFile').click();
+document.getElementById('impFile').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=()=>{try{const d=JSON.parse(r.result);validateBackup(d);
+    if(!confirm('Importar substituirá os dados atuais'+(cloud.enabled?' e enviará para a nuvem':'')+'. Continuar?')){e.target.value='';return;}
+    state=d;state.overrides=state.overrides||{};saveLocal();
+    toast('Backup importado.','ok');
+    render();}catch(err){toast('Arquivo inválido.','err');}e.target.value='';};r.readAsText(f);};
+document.getElementById('resetBtn').onclick=()=>{
+  if(!confirm('Isso apagará as categorias e lançamentos DESTE aparelho'+(cloud.enabled?' (os dados na nuvem NÃO são apagados aqui)':'')+'. Continuar?'))return;
+  if(!confirm('Confirmação final: recomeçar do zero?'))return;
+  state=defaultState();saveLocal();render();toast('Dados locais apagados.','ok');};
+function downloadBlob(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
+
+/* ---------- Init ---------- */
+const today=new Date();
+document.getElementById('fDate').value=monthKey(today)+'-'+String(today.getDate()).padStart(2,'0');
+document.querySelectorAll('.field').forEach(field=>{const label=field.querySelector('label'),input=field.querySelector('input,select,textarea');if(label&&input&&input.id)label.htmlFor=input.id;});
+render();
+</script>
+<script src="device.js"></script>
+</body>
+</html>
