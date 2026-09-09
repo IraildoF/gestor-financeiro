@@ -7,6 +7,8 @@ input,select,textarea{font-size:16px;min-width:0}
 .muted-note{color:var(--muted)}
 .head-inner{padding-top:calc(12px + env(safe-area-inset-top))}
 .brand{font-size:18px}
+#syncPill,#todayBtn{display:none}
+.month-label{font-size:13px;min-width:120px}
 main{max-width:900px}
 .modal{max-height:85dvh;overflow-y:auto}
 .toast{bottom:calc(20px + env(safe-area-inset-bottom));width:max-content;max-width:calc(100% - 24px)}
@@ -17,9 +19,9 @@ nav.tabs button.active{background:var(--bg2)}
 @media(max-width:600px){
  header{position:sticky;top:0}
  .head-inner{gap:6px;padding:calc(8px + env(safe-area-inset-top)) 14px 8px}
- .brand{flex:1}.sync-pill{font-size:12px}
+ .brand{flex:1}
  .month-nav{order:3;flex:1;margin-left:0;justify-content:space-between}
- #todayBtn{order:4}.month-label{min-width:0;font-size:14px}
+ .month-label{min-width:0;font-size:13px}
  main{padding:16px 12px}.card{padding:15px;min-width:0}
  .grid{gap:12px}.cards-4{grid-template-columns:repeat(2,minmax(0,1fr))}
  .stat .val{font-size:clamp(18px,5vw,25px);letter-spacing:-.5px}.stat .icon{display:none}
