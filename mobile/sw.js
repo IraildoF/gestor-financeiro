@@ -1,5 +1,5 @@
 'use strict';
-const CACHE='gestor-mobile-shell-v3';
+const CACHE='gestor-mobile-shell-v4';
 const ASSETS=['./','./index.html','./mobile.css','./device.js','./manifest.webmanifest','./icon-192.png','./icon-512.png'];
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)));
